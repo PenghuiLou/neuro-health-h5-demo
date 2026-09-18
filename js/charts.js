@@ -91,10 +91,10 @@
     [0, 0.5, 1].forEach(function (r) {
       var yy = pad.t + (h - pad.t - pad.b) * r;
       svg.push('<line x1="' + (pad.l - 6) + '" y1="' + yy.toFixed(1) + '" x2="' + (w - pad.r)
-        + '" y2="' + yy.toFixed(1) + '" stroke="#EEF2F7" stroke-width="1"/>');
+        + '" y2="' + yy.toFixed(1) + '" stroke="#f0e8db" stroke-width="1"/>');
       var val = g.hi - (g.hi - g.lo) * r;
       svg.push('<text x="' + (pad.l - 9) + '" y="' + (yy + 3.5).toFixed(1)
-        + '" text-anchor="end" font-size="9.5" fill="#A6B0BE">' + fmt(val, opts.digits) + '</text>');
+        + '" text-anchor="end" font-size="9.5" fill="#a89e90">' + fmt(val, opts.digits) + '</text>');
     });
 
     /* 个人参考区间（非医学诊断区间） */
@@ -113,7 +113,7 @@
         var x1 = g.coords[start].x - g.stepX * 0.4, x2 = g.coords[end].x + g.stepX * 0.4;
         svg.push('<rect x="' + Math.max(pad.l - 6, x1).toFixed(1) + '" y="' + pad.t
           + '" width="' + Math.max(5, x2 - x1).toFixed(1) + '" height="' + (h - pad.t - pad.b)
-          + '" fill="#E7ECF3" opacity="0.65" rx="3"/>');
+          + '" fill="#efe6d8" opacity="0.65" rx="3"/>');
         i = end + 1;
       } else { i++; }
     }
@@ -159,7 +159,7 @@
       var tx = k === 0 ? pad.l - 4 : (k === 2 ? w - pad.r + 4 : c.x);
       var anchor = k === 0 ? 'start' : (k === 2 ? 'end' : 'middle');
       svg.push('<text x="' + tx.toFixed(1) + '" y="' + (h - 6) + '" text-anchor="' + anchor
-        + '" font-size="10" fill="#A6B0BE">' + esc(c.label) + '</text>');
+        + '" font-size="10" fill="#a89e90">' + esc(c.label) + '</text>');
     });
 
     svg.push('</svg>');
@@ -238,7 +238,7 @@
     var offset = C * (1 - ratio);
     var color = opts.color || '#246BFD';
     return '<svg class="ring-svg" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" aria-label="综合评分">'
-      + '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#EDF1F7" stroke-width="' + stroke + '"/>'
+      + '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#f2eae0" stroke-width="' + stroke + '"/>'
       + '<circle class="ring-progress" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + color
       + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + ' ' + C.toFixed(1)
       + '" stroke-dashoffset="' + C.toFixed(1) + '" data-target="' + offset.toFixed(1) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>'
@@ -307,7 +307,7 @@
       html.push('<div class="hypno-row"><span class="hypno-label">' + row.name + '</span><div class="hypno-track">');
       blocks.forEach(function (b) {
         html.push('<i class="hypno-block" style="flex:0 0 ' + b.widthPct + '%;'
-          + (b.level === row.level ? 'background:' + row.color : 'background:#F2F5F9') + '" title="'
+          + (b.level === row.level ? 'background:' + row.color : 'background:#f5efe5') + '" title="'
           + esc(b.name) + ' ' + b.minutes + ' 分钟"></i>');
       });
       html.push('</div></div>');
@@ -331,11 +331,11 @@
     if (hi - lo < 4) { hi = lo + 4; }
     var plotH = h - pad.t - pad.b;
     var svg = ['<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="每日平均值对比">'];
-    svg.push('<line x1="0" y1="' + (h - pad.b) + '" x2="' + w + '" y2="' + (h - pad.b) + '" stroke="#EEF2F7" stroke-width="1"/>');
+    svg.push('<line x1="0" y1="' + (h - pad.b) + '" x2="' + w + '" y2="' + (h - pad.b) + '" stroke="#f0e8db" stroke-width="1"/>');
     points.forEach(function (p, i) {
       var cx = pad.l + slot * i + slot / 2;
       if (p.missing) {
-        svg.push('<rect x="' + (cx - barW / 2) + '" y="' + (h - pad.b - 10) + '" width="' + barW + '" height="10" rx="4" fill="#E7ECF3"/>');
+        svg.push('<rect x="' + (cx - barW / 2) + '" y="' + (h - pad.b - 10) + '" width="' + barW + '" height="10" rx="4" fill="#efe6d8"/>');
       } else {
         var barH = Math.max(6, (p.value - lo) / (hi - lo) * plotH);
         var y = h - pad.b - barH;
@@ -346,7 +346,7 @@
           + '" text-anchor="middle" font-size="10" letter-spacing="0" fill="#4A5568">' + fmt(p.value, o.digits)
           + (o.unit ? o.unit : '') + '</text>');
       }
-      svg.push('<text x="' + cx.toFixed(1) + '" y="' + (h - 8) + '" text-anchor="middle" font-size="10" fill="#A6B0BE">'
+      svg.push('<text x="' + cx.toFixed(1) + '" y="' + (h - 8) + '" text-anchor="middle" font-size="10" fill="#a89e90">'
         + esc(o.short ? String(p.label).slice(-1 * (o.short === true ? 2 : o.short)) : p.label) + '</text>');
     });
     svg.push('</svg>');

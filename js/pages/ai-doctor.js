@@ -13,18 +13,9 @@
   var Store = global.Store;
   var Pages = global.Pages = global.Pages || {};
 
-  /* AI 头像：抽象神经网络图形，避免模拟真人医生形象 */
+  /* AI 头像：动漫风格简笔画（不模拟真人医生形象） */
   function avatarSvg(size) {
-    var s = size || 34;
-    return '<svg viewBox="0 0 40 40" width="' + s + '" height="' + s + '" aria-hidden="true">'
-      + '<circle cx="20" cy="20" r="19" fill="#EAF1FF"/>'
-      + '<g stroke="#246BFD" stroke-width="1.2" opacity="0.75">'
-      + '<path d="M20 28V14M20 18l-6-4M20 18l6-4M20 24l-6-4M20 24l6-4" fill="none"/>'
-      + '</g>'
-      + '<g fill="#246BFD">'
-      + '<circle cx="20" cy="12.6" r="2.6"/><circle cx="13.4" cy="14.4" r="2.2"/><circle cx="26.6" cy="14.4" r="2.2"/>'
-      + '<circle cx="13.4" cy="24.2" r="2.2"/><circle cx="26.6" cy="24.2" r="2.2"/><circle cx="20" cy="27.6" r="2.6"/>'
-      + '</g></svg>';
+    return UI.animeAvatar('doctor', size || 34);
   }
 
   function headHtml(state) {
@@ -32,16 +23,40 @@
       + '<div class="chat-avatar">' + avatarSvg(40) + '<i class="online-dot"></i></div>'
       + '<div class="chat-head-main">'
       + '<div class="chat-name">脑安 AI 医生<span class="tag is-success"><i class="dot"></i>在线</span></div>'
-      + '<div class="chat-desc">帮助您理解健康数据，建立更好的生活习惯</div>'
-      + '<div class="chat-desc-sub">可解释健康趋势，不替代医生诊断</div>'
       + '</div>'
-      + '<button class="icon-btn ghost" data-role="clear" aria-label="清空对话">' + UI.icon('trash', 18) + '</button>'
+      + '<button class="icon-btn ghost" data-role="switch-agent" aria-label="切换医生">' + UI.icon('swap', 18) + '</button>'
       + '</div>';
   }
 
-  function safetyHtml() {
-    return '<div class="chat-safety">' + UI.icon('shield', 14)
-      + '<span>AI 生成内容仅用于健康科普和趋势参考，不构成诊断或治疗建议。紧急情况请直接联系专业医疗机构。</span></div>';
+  /* 医生 Agent 切换（演示：当前仅脑安 AI 医生可用，其余为规划中） */
+  function openAgentSheet() {
+    var agents = [
+      { name: '脑安 AI 医生', desc: '解释睡眠 / 心率 / 脑电 / 脑氧趋势', state: '当前' },
+      { name: '睡眠管理师', desc: '专注作息规划与睡眠小目标（规划中）', state: '敬请期待' },
+      { name: '呼吸放松教练', desc: '引导呼吸练习与放松训练（规划中）', state: '敬请期待' }
+    ];
+    UI.sheet({
+      title: '切换医生 Agent',
+      body: '<div class="agent-list">' + agents.map(function (a, i) {
+        return '<div class="agent-row' + (i === 0 ? ' is-active' : '') + '" data-agent="' + i + '">'
+          + '<div class="agent-avatar">' + avatarSvg(34) + '</div>'
+          + '<div class="agent-main"><div class="agent-name">' + UI.esc(a.name) + '</div>'
+          + '<div class="agent-desc">' + UI.esc(a.desc) + '</div></div>'
+          + UI.tag(a.state, i === 0 ? 'success' : 'primary') + '</div>';
+      }).join('') + '</div>'
+        + '<div class="demo-note">' + UI.icon('info', 14)
+        + '<span>更多医生 Agent 将在后续版本开放，当前演示版本仅提供脑安 AI 医生。</span></div>',
+      onMount: function (wrap, close) {
+        wrap.addEventListener('click', function (e) {
+          var row = e.target.closest('[data-agent]');
+          if (!row) { return; }
+          var i = parseInt(row.getAttribute('data-agent'), 10);
+          close();
+          if (i === 0) { UI.toast('已切换到脑安 AI 医生', { icon: 'swap' }); }
+          else { UI.toast('该医生 Agent 即将上线，敬请期待', { icon: 'info' }); }
+        });
+      }
+    });
   }
 
   function bubbleHtml(msg) {
@@ -61,7 +76,7 @@
     var list = state.chat.messages;
     if (!list.length) {
       return '<div class="chat-empty">' + UI.icon('sparkles', 24)
-        + '<div>还没有对话记录，可以从下方快捷问题开始</div></div>';
+        + '<div>还没有对话记录，可以从下方「猜你想问」开始</div></div>';
     }
     return list.map(bubbleHtml).join('')
       + (state.chat.typing
@@ -74,7 +89,7 @@
 
   function presetsHtml() {
     return '<div class="preset-wrapper">'
-      + '<div class="preset-title">快捷问题</div>'
+      + '<div class="preset-title">猜你想问</div>'
       + '<div class="preset-row">'
       + MD.chat.presets.map(function (p, i) {
         return '<button class="preset-chip" data-preset="' + i + '">' + UI.esc(p.q) + '</button>';
@@ -86,8 +101,6 @@
     return '<div class="composer">'
       + '<div class="composer-tools">'
       + '<button class="tool-btn" data-role="quote">' + UI.icon('grid', 16) + '引用数据</button>'
-      + '<button class="tool-btn" data-role="voice">' + UI.icon('mic', 16) + '语音</button>'
-      + '<span class="composer-tip">演示版本：回答为本地模拟生成</span>'
       + '</div>'
       + '<div class="composer-input">'
       + '<textarea class="textarea" rows="1" data-role="input" placeholder="描述您想了解的指标或问题…"></textarea>'
@@ -100,7 +113,6 @@
     var state = Store.get();
     return UI.el('<div class="page chat-page">'
       + headHtml(state)
-      + safetyHtml()
       + '<div class="chat-body" data-role="messages">' + messagesHtml(state) + '</div>'
       + presetsHtml()
       + composerHtml()
@@ -118,10 +130,10 @@
   function mounted(host, params, ctx) {
     var msgBox = UI.$('[data-role="messages"]', host);
     var input = UI.$('[data-role="input"]', host);
-    var viewRoot = document.getElementById('view-root');
 
+    /* 消息区独立滚动：新消息到达时滚动到底部，输入区固定在 Tab 上方 */
     function toBottom() {
-      if (viewRoot) { viewRoot.scrollTop = viewRoot.scrollHeight; }
+      if (msgBox) { msgBox.scrollTop = msgBox.scrollHeight; }
     }
     function refreshMessages() {
       msgBox.innerHTML = messagesHtml(Store.get());
@@ -216,20 +228,8 @@
       var role = roleEl ? roleEl.getAttribute('data-role') : null;
 
       if (role === 'send') { send(input.value); return; }
-      if (role === 'voice') { UI.toast('演示版本暂不支持语音输入', { icon: 'mic' }); return; }
       if (role === 'quote') { openQuoteSheet(); return; }
-      if (role === 'clear') {
-        UI.modal({
-          title: '清空当前对话？',
-          desc: '清空后将重新开始，已引用的数据不会保留。',
-          confirmText: '清空对话',
-          onConfirm: function () {
-            Store.actions.clearChat();
-            Store.actions.pushMessage({ role: 'ai', text: MD.chat.welcome, welcome: true });
-            UI.toast('已清空对话', { icon: 'trash' });
-          }
-        });
-      }
+      if (role === 'switch-agent') { openAgentSheet(); return; }
     });
   }
 

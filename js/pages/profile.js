@@ -80,7 +80,7 @@
   /* ---------- 我的页面挂载 ---------- */
   function mountedProfile(host, params, ctx) {
     ctx.onStore(function (state, reason) {
-      if (reason === 'demo' || reason === 'family' || reason === 'device' || reason === 'profile') {
+      if (reason === 'family' || reason === 'profile') {
         global.Router.fire('store-refresh');
       }
     });
@@ -93,47 +93,13 @@
 
       var roleEl = t.closest('[data-role]');
       var role = roleEl ? roleEl.getAttribute('data-role') : null;
-      var state = Store.get();
 
       if (role === 'edit-profile') { global.Router.push('edit-profile'); return; }
-      if (role === 'add-device') { global.Router.push('add-device'); return; }
-      if (role === 'device-detail') { global.Router.push('device-detail'); return; }
-      if (role === 'invite') { global.Router.push('family-invite'); return; }
+      if (role === 'family') { global.Router.push('family'); return; }
       if (role === 'about') { global.Router.push('about'); return; }
       if (role === 'privacy') { global.Router.push('privacy'); return; }
       if (role === 'contact') { global.Router.push('contact'); return; }
       if (role === 'faq') { global.Router.push('faq'); return; }
-      if (role === 'sync') {
-        if (!state.device.bound) { UI.toast('尚未绑定设备', { icon: 'info' }); return; }
-        UI.toast('正在同步最近记录…', { icon: 'sync' });
-        setTimeout(function () {
-          Store.actions.markSynced();
-          UI.toast('同步完成：' + state.device.name, { icon: 'check' });
-        }, 1200);
-        return;
-      }
-      if (role === 'toggle-empty') {
-        Store.actions.setDemo({ empty: !state.demo.empty });
-        UI.toast(state.demo.empty ? '已关闭空状态演示' : '已开启空状态演示', { icon: 'info' });
-        return;
-      }
-      if (role === 'toggle-error') {
-        Store.actions.setDemo({ syncError: !state.demo.syncError });
-        UI.toast(state.demo.syncError ? '已关闭同步失败演示' : '已开启同步失败演示', { icon: 'info' });
-        return;
-      }
-      if (role === 'reset-demo') {
-        UI.modal({
-          title: '重置演示数据？',
-          desc: '将恢复默认的设备状态、指标数据、家庭列表与对话记录。',
-          confirmText: '重置',
-          onConfirm: function () {
-            Store.actions.resetDemo();
-            UI.toast('演示数据已重置', { icon: 'sync' });
-          }
-        });
-        return;
-      }
       if (role === 'logout') {
         UI.modal({
           title: '确定退出当前账号吗？',
@@ -342,102 +308,32 @@
 
   function profileCardHtml(state) {
     var p = state.profile;
-    return '<div class="card profile-card">'
-      + '<div class="avatar-lg">' + UI.esc(p.avatarText) + '</div>'
+    return '<div class="card profile-card" data-role="edit-profile">'
+      + '<div class="profile-avatar">' + UI.animeAvatar('person', 52) + '</div>'
       + '<div class="profile-main">'
       + '<div class="profile-name">' + UI.esc(p.nickname) + '</div>'
-      + '<div class="profile-meta">' + p.age + ' 岁 · ' + UI.esc(p.gender) + ' · ' + UI.esc(p.height) + '</div>'
-      + '<div class="profile-progress"><i style="width:' + p.completeness + '%"></i></div>'
-      + '<div class="profile-progress-text">健康档案完成度 ' + p.completeness + '%<span>完善档案可获得更贴近个人的趋势解释</span></div>'
       + '</div>'
-      + '<button class="btn btn-ghost btn-sm" data-role="edit-profile">编辑资料</button>'
+      + '<div class="profile-link">个人档案' + UI.icon('chevron', 16) + '</div>'
       + '</div>';
   }
 
-  function deviceSectionHtml(state) {
-    var d = state.device;
-    if (!d.bound) {
-      return '<div class="card flush">'
-        + UI.listRow({ icon: 'plus', title: '添加设备', desc: '绑定脑安神经健康仪后开始采集', attrs: 'data-role="add-device"' })
-        + '</div>';
-    }
+  /* 家庭管理 + 更多：合并为一张列表卡，仅保留入口标题 */
+  function menuSectionHtml() {
     return '<div class="card flush">'
-      + UI.listRow({
-        icon: 'device', title: d.name,
-        desc: '编号 ' + d.sn + ' · 固件 ' + d.firmware,
-        badge: UI.tag(d.paused ? '采集已暂停' : '已连接', d.paused ? 'warning' : 'success'),
-        attrs: 'data-role="device-detail"'
-      })
-      + UI.listRow({
-        icon: 'battery', tone: 'success', title: '电量与信号',
-        desc: '电量 ' + d.battery + '% · 蓝牙信号' + d.signal + ' · 最近同步 ' + d.lastSync,
-        arrow: false, attrs: 'data-role="sync"'
-      })
-      + UI.listRow({
-        icon: 'plus', tone: 'violet', title: '添加设备',
-        desc: '绑定第二台设备或更换当前设备', attrs: 'data-role="add-device"'
-      })
-      + '</div>';
-  }
-
-  function familySectionHtml(state) {
-    return '<div class="card flush">' + state.family.map(function (m) {
-      return UI.listRow({
-        icon: 'family', tone: m.avatarTone === 'violet' ? 'violet' : undefined,
-        title: m.name + ' · ' + m.relation,
-        desc: '可见范围：' + m.scope + ' · ' + (m.status === '已授权' ? '授权于 ' + m.since : '等待对方接受'),
-        badge: UI.tag(m.status, m.status === '已授权' ? 'success' : 'warning'),
-        attrs: 'data-family="' + m.id + '"'
-      });
-    }).join('')
-      + UI.listRow({ icon: 'plus', tone: 'violet', title: '邀请家人', desc: '在获得授权后共同关注健康数据', attrs: 'data-role="invite"' })
-      + '</div>';
-  }
-
-  function demoConsoleHtml(state) {
-    return '<div class="card">'
-      + '<div class="chart-title-row"><div class="chart-title">演示控制台</div>'
-      + UI.tag('面试辅助', 'violet') + '</div>'
-      + '<div class="card-sub">用于现场演示空状态、错误状态与数据重置，正式产品中不包含此模块。</div>'
-      + '<div class="demo-row" data-role="toggle-empty">'
-      + '<div class="demo-row-main"><div class="row-title">空状态演示</div>'
-      + '<div class="row-desc">开启后首页与详情页展示“还没有足够的有效记录”</div></div>'
-      + '<span class="switch' + (state.demo.empty ? ' is-on' : '') + '"></span></div>'
-      + '<div class="demo-row" data-role="toggle-error">'
-      + '<div class="demo-row-main"><div class="row-title">同步失败演示</div>'
-      + '<div class="row-desc">开启后首页显示“数据同步暂时中断”并可重试</div></div>'
-      + '<span class="switch' + (state.demo.syncError ? ' is-on' : '') + '"></span></div>'
-      + '<button class="btn btn-ghost btn-sm btn-block" style="margin-top:12px" data-role="reset-demo">'
-      + UI.icon('sync', 15) + '重置演示数据</button>'
-      + '</div>';
-  }
-
-  function moreSectionHtml() {
-    return '<div class="card flush">'
-      + UI.listRow({ icon: 'info', title: '关于我们', desc: '杭州演化医疗设备有限公司', attrs: 'data-role="about"' })
-      + UI.listRow({ icon: 'lock', tone: 'success', title: '隐私说明', desc: '健康数据的用途与授权边界', attrs: 'data-role="privacy"' })
-      + UI.listRow({ icon: 'mail', tone: 'violet', title: '联系我们', desc: MD.contact.email, attrs: 'data-role="contact"' })
-      + UI.listRow({ icon: 'doc', title: '常见问题', desc: '演示数据、AI 边界与家庭共享说明', attrs: 'data-role="faq"' })
+      + UI.listRow({ icon: 'family', tone: 'violet', title: '家庭管理', attrs: 'data-role="family"' })
+      + UI.listRow({ icon: 'info', title: '关于我们', attrs: 'data-role="about"' })
+      + UI.listRow({ icon: 'lock', tone: 'success', title: '隐私说明', attrs: 'data-role="privacy"' })
+      + UI.listRow({ icon: 'mail', tone: 'violet', title: '联系我们', attrs: 'data-role="contact"' })
+      + UI.listRow({ icon: 'doc', title: '常见问题', attrs: 'data-role="faq"' })
       + '</div>';
   }
 
   function renderProfile() {
     var state = Store.get();
     return UI.el('<div class="page profile-page">'
-      + '<div class="home-head"><div class="home-greet">'
-      + '<div class="home-hello">我的</div>'
-      + '<div class="home-sub">健康档案、设备与家庭管理'
-      + '<span class="demo-chip">' + UI.icon('info', 12) + '演示数据</span></div>'
-      + '</div></div>'
       + '<div class="stack-gap">'
       + profileCardHtml(state)
-      + '<div class="section-title">设备管理</div>'
-      + deviceSectionHtml(state)
-      + '<div class="section-title">家庭管理<span class="sub">需明确授权后可查看</span></div>'
-      + familySectionHtml(state)
-      + '<div class="section-title">更多</div>'
-      + moreSectionHtml()
-      + demoConsoleHtml(state)
+      + menuSectionHtml()
       + '<button class="btn btn-ghost btn-block" data-role="logout">退出登录</button>'
       + '<div class="profile-footer">'
       + '<div>脑安健康管理 H5 · ' + UI.esc(MD.about.version) + '</div>'

@@ -193,7 +193,7 @@
             { key: 'deep', name: '深睡', minutes: 98, color: '#4B62E0' },
             { key: 'light', name: '浅睡', minutes: 261, color: '#8FA6F0' },
             { key: 'rem', name: 'REM', minutes: 103, color: '#7B6CF6' },
-            { key: 'awake', name: '清醒', minutes: 18, color: '#D8DEEA' }
+            { key: 'awake', name: '清醒', minutes: 18, color: '#e0d6c8' }
           ],
           hypnogram: buildHypnogram(),
           brToday: withLabels(brPoints, SLEEP_LABELS)
@@ -265,13 +265,15 @@
       title: '今天的心率记录出现轻微波动',
       body: '当前记录暂未形成明确异常趋势。建议在安静状态下重新采集一次，并关注是否伴随胸闷、心悸等不适。如有持续不适，请及时咨询专业人士。',
       action: '查看心电详情'
-    },
-    {
-      id: 'tip-eeg', tone: 'primary', tag: '采集质量', metric: 'eeg',
-      title: '采集质量提醒',
-      body: '最近一次脑电数据中存在短时信号波动，可能与设备佩戴位置或身体移动有关。建议调整佩戴位置后再次采集。',
-      action: '查看脑电详情'
     }
+  ];
+
+  /* 首页概览卡：每 3 秒轮播一条健康提示（趋势提示，非诊断结论） */
+  var TICKER = [
+    '近期血氧相对指数偏高，建议保持规律作息、适量补水',
+    '昨晚睡眠时长 7 小时 42 分钟，继续保持固定的入睡时间',
+    '今日心率整体平稳，可维持当前的运动与休息节奏',
+    '脑电处于放松状态，适合安排一段专注工作或短暂休息'
   ];
 
   var GOAL = {
@@ -458,6 +460,7 @@
     overview: OVERVIEW,
     bands: BANDS,
     tips: TIPS,
+    ticker: TICKER,
     goal: GOAL,
     device: DEVICE,
     discovered: DISCOVERED_DEVICES,

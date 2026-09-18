@@ -17,54 +17,39 @@
     var d = Store.get().device;
     if (!d.bound) {
       return UI.el('<div class="page">'
-        + UI.pageHead({ title: '设备详情', sub: '尚未连接设备' })
+        + UI.pageHead({ title: '设备详情', center: true })
         + '<div class="card">' + UI.stateBox({
           icon: 'device', title: '尚未连接设备',
-          desc: '绑定脑安神经健康仪后，可查看电量、固件与数据同步记录。',
+          desc: '绑定脑安神经健康仪后，可查看设备信息与固件状态。',
           actionHtml: '<button class="btn btn-primary btn-sm" data-role="add-device">添加设备</button>'
         }) + '</div>'
-        + '<div class="demo-note" style="margin-top:12px">' + UI.icon('info', 14)
-        + '<span>演示模式：仍可查看模拟数据，无需真实设备。</span></div>'
         + '</div>');
     }
     return UI.el('<div class="page">'
-      + UI.pageHead({ title: '设备详情', sub: d.model + ' · 编号 ' + d.sn })
+      + UI.pageHead({ title: '设备详情', center: true })
       + '<div class="stack-gap">'
       + '<div class="card device-hero">'
       + '<div class="device-hero-icon">' + UI.icon('device', 26) + '</div>'
       + '<div class="device-hero-main"><div class="device-hero-name">' + UI.esc(d.name) + '</div>'
-      + '<div class="device-hero-desc">' + UI.esc(d.model) + ' · 编号 ' + UI.esc(d.sn) + '</div>'
-      + '<div class="device-hero-tags">' + UI.tag(d.paused ? '采集已暂停' : '已连接', d.paused ? 'warning' : 'success')
-      + UI.tag('电量 ' + d.battery + '%', d.battery > 30 ? 'primary' : 'warning')
-      + UI.tag('蓝牙信号' + d.signal, 'success') + '</div></div>'
+      + '<div class="device-hero-desc">' + UI.esc(d.model) + '</div>'
+      + '<div class="device-hero-tags">' + UI.tag('已连接', 'success') + '</div></div>'
       + '</div>'
       + '<div class="card">'
       + '<div class="chart-title-row"><div class="chart-title">设备信息</div>'
       + UI.tag('固件 ' + d.firmware, 'primary') + '</div>'
       + '<div class="kv-list">'
       + kv('设备编号', d.sn)
-      + kv('连接状态', d.paused ? '已连接 · 采集已暂停' : '已连接 · 正在采集')
-      + kv('电量', d.battery + '%（预计可用 6 小时）')
+      + kv('连接状态', '已连接')
       + kv('固件版本', d.firmware + '（已是最新）')
       + kv('采集模式', d.mode)
       + kv('最近同步', d.lastSync)
       + '</div>'
       + '<div class="btn-row" style="margin-top:14px">'
-      + '<button class="btn btn-ghost btn-sm" data-role="pause">' + (d.paused ? '继续采集' : '暂停采集') + '</button>'
       + '<button class="btn btn-soft btn-sm" data-role="sync">' + UI.icon('sync', 15) + '同步数据</button>'
       + '<button class="btn btn-ghost btn-sm" data-role="firmware">' + UI.icon('doc', 15) + '固件升级</button>'
       + '</div>'
       + '</div>'
-      + '<div class="card">'
-      + '<div class="chart-title-row"><div class="chart-title">数据同步记录</div></div>'
-      + '<div class="kv-list">' + d.syncLogs.map(function (l) {
-        return '<div class="kv-row"><span class="kv-key">' + UI.esc(l.time) + '</span>'
-          + '<span class="kv-val">' + UI.esc(l.text + ' · ' + l.state) + '</span></div>';
-      }).join('') + '</div>'
-      + '</div>'
       + '<button class="btn btn-ghost btn-block" data-role="unbind" style="color:var(--danger)">解绑设备</button>'
-      + '<div class="demo-note">' + UI.icon('info', 14)
-      + '<span>解绑后仍可使用演示数据浏览完整功能，再次添加设备即可恢复连接状态。</span></div>'
       + '</div></div>');
   }
 
@@ -76,11 +61,6 @@
       if (!role) { return; }
       var d = Store.get().device;
 
-      if (role === 'pause') {
-        var paused = Store.actions.togglePause();
-        UI.toast(paused ? '采集已暂停' : '已继续采集', { icon: paused ? 'pause' : 'play' });
-        return;
-      }
       if (role === 'sync') {
         var btn = roleEl;
         btn.classList.add('is-disabled');

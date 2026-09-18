@@ -58,6 +58,7 @@
     lock: 'M6.4 11h11.2v9H6.4zM9.2 11V8.2a2.8 2.8 0 0 1 5.6 0V11',
     sparkles: 'M11.6 3.6l1.5 4.2 4.3 1.5-4.3 1.5-1.5 4.3-1.5-4.3L5.8 9.3l4.3-1.5zM17.8 15.2l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z',
     edit: 'M4.4 19.6h3.8L18.6 9.2l-3.8-3.8L4.4 15.8zM14.2 6l3.8 3.8',
+    swap: 'M5.2 8.6h11.4M13.4 5.4l3.2 3.2-3.2 3.2M18.8 15.4H7.4M10.6 12.2l-3.2 3.2 3.2 3.2',
     trash: 'M6.4 7.2h11.2M9.4 7.2V5h5.2v2.2M8 7.2 8.9 20h6.2L16 7.2',
     search: 'M11 18.4a7.4 7.4 0 1 0 0-14.8 7.4 7.4 0 0 0 0 14.8zM16.6 16.6 20.4 20.4',
     clock: 'M12 20.4a8.4 8.4 0 1 0 0-16.8 8.4 8.4 0 0 0 0 16.8zM12 7.6v5l3.2 1.9',
@@ -180,13 +181,20 @@
       + '</div>';
   }
 
-  /* ---------- 页头（返回按钮 + 标题 + 右侧操作） ---------- */
+  /* ---------- 页头（返回按钮 + 标题 + 右侧操作；center 时标题居中） ---------- */
   function pageHead(opt) {
     var o = opt || {};
-    return '<div class="page-head">'
-      + (o.back === false ? '' : '<button class="icon-btn" data-role="back" aria-label="返回">' + icon('back', 19) + '</button>')
-      + '<div><h1>' + esc(o.title || '') + '</h1>'
-      + (o.sub ? '<div class="head-sub">' + esc(o.sub) + '</div>' : '') + '</div>'
+    var back = o.back === false ? '' : '<button class="icon-btn head-back" data-role="back" aria-label="返回">' + icon('back', 19) + '</button>';
+    var titleHtml = '<h1>' + esc(o.title || '') + '</h1>'
+      + (o.sub ? '<div class="head-sub">' + esc(o.sub) + '</div>' : '');
+    if (o.center) {
+      return '<div class="page-head is-center">' + back
+        + '<div class="head-center">' + titleHtml + '</div>'
+        + '<div class="head-right">' + (o.right || '') + '</div>'
+        + '</div>';
+    }
+    return '<div class="page-head">' + back
+      + '<div>' + titleHtml + '</div>'
       + '<div class="head-right">' + (o.right || '') + '</div>'
       + '</div>';
   }
@@ -205,6 +213,35 @@
   function tag(text, tone) {
     return '<span class="tag' + (tone ? ' is-' + tone : '') + '">'
       + (tone === 'success' ? '<i class="dot"></i>' : '') + esc(text) + '</span>';
+  }
+
+  /* ---------- 动漫风格简笔画头像（医生 / 个人） ---------- */
+  var avatarSeq = 0;
+  function animeAvatar(kind, size) {
+    var s = size || 40;
+    var doctor = kind === 'doctor';
+    avatarSeq++;
+    var clipId = 'avc' + avatarSeq;
+    var bg = doctor ? '#E7EFFD' : '#FDEDD8';
+    var hair = doctor ? '#33507E' : '#6B4E3E';
+    var body = doctor
+      ? '<path d="M12 45.5c1.2-5.6 5.8-8 12-8s10.8 2.4 12 8z" fill="#FFFFFF" stroke="#D5E2F8" stroke-width="1"/>'
+        + '<path d="M20.2 38.4 24 42.6l3.8-4.2" stroke="#9DBFF2" stroke-width="1.4" fill="none" stroke-linecap="round"/>'
+      : '<path d="M12 45.5c1-5.2 5.6-7.6 12-7.6s11 2.4 12 7.6z" fill="#F6E0C8"/>';
+    return '<svg viewBox="0 0 48 48" width="' + s + '" height="' + s + '" aria-hidden="true">'
+      + '<defs><clipPath id="' + clipId + '"><circle cx="24" cy="24" r="23"/></clipPath></defs>'
+      + '<circle cx="24" cy="24" r="23" fill="' + bg + '"/>'
+      + '<g clip-path="url(#' + clipId + ')">'
+      + '<path d="M11.4 27.4c0-9.6 5.9-15 12.6-15s12.6 5.4 12.6 15c0 2.8-.9 5-.9 5l-1.5-5.4c-2.2-3.4-6.1-5-10.2-5s-8 1.6-10.2 5l-1.5 5.4s-.9-2.2-.9-5z" fill="' + hair + '"/>'
+      + '<path d="M15 27.8c0-6.2 4.2-9.4 9-9.4s9 3.2 9 9.4-4.2 11-9 11-9-4.8-9-11z" fill="#FFEAD3"/>'
+      + '<path d="M15.2 24.2c1.4-4.8 4.9-6.6 8.8-6.6s7.4 1.8 8.8 6.6c-2.6-1.9-5.5-2.7-8.8-2.7s-6.2.8-8.8 2.7z" fill="' + hair + '"/>'
+      + '<ellipse cx="19.6" cy="28.6" rx="1.5" ry="2.1" fill="#3A3A3A"/>'
+      + '<ellipse cx="28.4" cy="28.6" rx="1.5" ry="2.1" fill="#3A3A3A"/>'
+      + '<path d="M21.6 33c1.5 1.4 3.3 1.4 4.8 0" stroke="#D08A63" stroke-width="1.3" fill="none" stroke-linecap="round"/>'
+      + '<circle cx="16.2" cy="31.6" r="1.5" fill="#F8C9AC" opacity="0.85"/>'
+      + '<circle cx="31.8" cy="31.6" r="1.5" fill="#F8C9AC" opacity="0.85"/>'
+      + body
+      + '</g></svg>';
   }
 
   /* ---------- 时间与文案工具 ---------- */
@@ -264,6 +301,7 @@
     pageHead: pageHead, listRow: listRow,
     greeting: greeting, fmtClock: fmtClock, todayLabel: todayLabel,
     copyText: copyText, bindBack: bindBack, bindScrollShadow: bindScrollShadow,
+    animeAvatar: animeAvatar,
     Icons: ICONS
   };
 })(window);
