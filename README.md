@@ -48,10 +48,10 @@ neuro-health-h5-demo/
    ├─ components/
    │  └─ ai-insight-sheet.js     # AIInsightSheet：AI 解读抽屉（加载态 + 三段式结论 + 继续追问）
    ├─ pages/
-   │  ├─ home.js                 # HomePage + MetricCard + DevicePanel
+   │  ├─ home.js                 # HomePage + MetricCard（一行一项、轮播健康提示）
    │  ├─ metric-detail.js        # MetricDetailPage（日/周/月、趋势/数据摘要、事件、缺失区间、月报）
-   │  ├─ ai-doctor.js            # AIDoctorPage（快捷问题、数据引用、打字中状态、安全边界）
-   │  ├─ profile.js              # ProfilePage + FamilyManager + 邀请家人三步流程
+   │  ├─ ai-doctor.js            # AIDoctorPage（猜你想问、数据引用、Agent 切换、固定输入区）
+   │  ├─ profile.js              # ProfilePage（动漫头像、个人档案入口）+ FamilyManager + 邀请家人三步流程
    │  └─ settings.js             # 设备详情 / 添加设备 / 编辑资料 / 小目标 / 关于我们 / 隐私 / 联系 / FAQ
    └─ app.js                     # 启动：路由渲染、Tab 切换、3 秒实时数据心跳
 ```
